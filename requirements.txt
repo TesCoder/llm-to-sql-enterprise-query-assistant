@@ -1,0 +1,11 @@
+fastapi>=0.110.0          # Web framework for building APIs (backend)
+uvicorn[standard]>=0.27.0 # ASGI server to run FastAPI applications
+pydantic>=2.6.0           # Data validation and settings management using Python type annotations
+sqlalchemy>=2.0.0         # SQL toolkit and ORM for database interactions
+databases>=0.8.0          # Async database support for SQLAlchemy
+python-dotenv>=1.0.0      # Reads environment variables from .env file
+aiosqlite>=0.20.0         # Async SQLite driver used by databases
+openai>=1.12.0            # OpenAI API client library for LLM calls
+pgvector>=0.2.5           # Adds vector search support (via Postgres extension)
+black>=24.2.0             # Code formatter for Python
+pytest>=8.1.0             # Python testing framework

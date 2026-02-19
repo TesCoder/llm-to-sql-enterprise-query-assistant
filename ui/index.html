@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LLM-to-SQL — Ask (Natural Language)</title>
+    <link rel="stylesheet" href="/ui/styles.css?v=20260218-10" />
+  </head>
+  <body>
+    <div class="page">
+      <header class="header">
+        <div class="header-inner">
+          <div class="brand">
+            <span class="brand-mark">●</span>
+            <span class="brand-name">LLM-to-SQL</span>
+          </div>
+
+          <nav class="nav">
+            <button id="dataInfoBtn" type="button" class="nav-link ghost">Data info</button>
+            <a class="nav-link" href="/manual/">Manual SQL</a>
+            <a class="nav-link" href="/docs" target="_blank" rel="noreferrer">API Docs</a>
+          </nav>
+        </div>
+      </header>
+
+      <main class="main">
+        <section class="hero">
+        <h1 class="hero-title">Ask your data.</h1>
+        <p class="hero-principle">Insight shouldn't depend on who knows SQL.</p>
+        <p class="hero-subtitle">Plain English in. Results out. It's that simple.</p>
+      </section>
+
+        <section class="card">
+          <form id="askForm" class="composer">
+            <label class="label align-center" for="question">What do you want to know?</label>
+            <div class="input-row">
+              <textarea
+                id="question"
+                class="textarea"
+                rows="2"
+                spellcheck="true"
+                placeholder="e.g. What were total sales by region last quarter?"
+              ></textarea>
+              <div class="actions">
+                <button id="askBtn" class="button" type="submit">Run</button>
+                <button id="clearBtn" class="button secondary" type="button">Clear</button>
+              </div>
+            </div>
+            <div class="trust-line">Read-only queries. Results capped for safety.</div>
+            <div class="hint">
+              Tip: press <kbd>Enter</kbd> to send, <kbd>Shift</kbd>+<kbd>Enter</kbd> for a new line.
+              If you want to run raw SQL, use <a href="/manual/">Manual SQL</a>.
+            </div>
+          </form>
+
+          <div class="verified">
+            <div class="verified-title">Try one of the verified questions below.</div>
+            <div class="chips" aria-label="Verified questions">
+              <button class="chip" type="button" data-q="Show total sales by region">Total sales by region</button>
+              <button class="chip" type="button" data-q="Show total sales by category">Sales by category</button>
+              <button class="chip" type="button" data-q="Show total sales by sub-category">Sales by sub-category</button>
+              <button class="chip" type="button" data-q="What are the top 10 states by sales?">Top states by sales</button>
+              <!-- <button class="chip" type="button" data-q="What are the top 10 cities by sales?">Top cities by sales</button> -->
+              <!-- <button class="chip" type="button" data-q="How many unique orders are in the dataset?">Count orders</button> -->
+              <!-- <button class="chip" type="button" data-q="Show total sales by month">Sales by month</button> -->
+              <!-- <button class="chip" type="button" data-q="What are the top 10 products by sales?">Top products by sales</button> -->
+            </div>
+          </div>
+        </section>
+
+        <section class="card hidden" id="resultCard">
+          <div class="result-header">
+            <div class="result-title">Response</div>
+            <div id="status" class="pill muted">Idle</div>
+          </div>
+
+          <div id="error" class="error hidden"></div>
+
+          <div id="visual" class="visual hidden">
+            <div class="visual-meta">
+              <div class="meta-grid">
+                <div class="meta-item" data-dev-only="true">
+                  <div class="meta-label">Source</div>
+                  <div id="metaSource" class="meta-value muted">—</div>
+                </div>
+                <div class="meta-item" data-dev-only="true">
+                  <div class="meta-label">Verified ID</div>
+                  <div id="metaPreset" class="meta-value muted">—</div>
+                </div>
+                <div class="meta-item">
+                  <div class="meta-label">Rows</div>
+                  <div id="metaRows" class="meta-value muted">—</div>
+                </div>
+              </div>
+            </div>
+
+            <div id="publicMessage" class="note" data-dev-only="true"></div>
+            <div id="devMessage" class="note muted hidden" data-dev-only="true"></div>
+
+
+            <div id="kpi" class="kpi hidden">
+              <div id="kpiLabel" class="kpi-label"></div>
+              <div id="kpiValue" class="kpi-value"></div>
+            </div>
+
+            <div id="chartSection" class="viz-section hidden">
+              <div class="viz-header">
+                <div class="viz-title">Chart</div>
+                <div id="chartCaption" class="viz-caption muted"></div>
+              </div>
+              <div class="canvas-wrap">
+                <canvas id="chartCanvas"></canvas>
+              </div>
+            </div>
+
+            <div id="tableSection" class="viz-section hidden">
+              <div class="viz-header">
+                <div class="viz-title">Table</div>
+                <div id="tableCaption" class="viz-caption muted"></div>
+              </div>
+              <div id="tableWrap" class="table-wrap muted">—</div>
+            </div>
+
+            <details id="sqlDetails" class="details" data-dev-only="true">
+              <summary>Executed SQL</summary>
+              <pre id="executedSql"></pre>
+            </details>
+
+            <details id="debugDetails" class="details" data-dev-only="true">
+              <summary>Debug JSON (latest)</summary>
+              <pre id="debugJson"></pre>
+            </details>
+          </div>
+
+          <div class="thread" id="thread" data-dev-only="true">
+            <!-- messages appended here -->
+          </div>
+        </section>
+      </main>
+
+      <footer class="footer">
+        <div class="footer-inner">
+          <span class="muted">DB: <code>enterprise.db</code></span>
+          <span class="sep">·</span>
+          <span class="muted">Dataset: <code>data/train.csv</code></span>
+          <span class="sep">·</span>
+          <span class="muted">Backend: <code>service/app.py</code></span>
+          <span class="sep">·</span>
+          <button
+            id="devToggle"
+            type="button"
+            class="footer-toggle"
+            aria-pressed="false"
+            title="Toggle developer details"
+          >
+            <span class="dev-dot" aria-hidden="true"></span>
+            Dev
+          </button>
+        </div>
+      </footer>
+    </div>
+
+    <script src="/ui/app.js?v=20260218-10" defer></script>
+
+    <!-- Data Info Modal -->
+    <div id="dataModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="dataModalTitle">
+      <div class="modal-backdrop" data-close="modal"></div>
+      <div class="modal-card">
+        <div class="modal-header">
+          <div>
+            <div id="dataModalTitle" class="modal-title">Dataset Overview</div>
+            <div class="modal-subtitle muted">Quick reference for the loaded DB</div>
+          </div>
+          <button class="modal-close" type="button" data-close="modal" aria-label="Close">✕</button>
+        </div>
+
+        <div class="modal-body">
+          <div class="modal-section">
+            <div class="modal-label">About the dataset</div>
+            <div class="modal-desc muted">
+              This dataset is a retail “Superstore Sales” dataset. Each row represents a product line item on an order,
+              and it includes:
+            </div>
+            <ul class="modal-list">
+              <li><b>Orders</b>: Order ID, Order Date, Ship Date, Ship Mode</li>
+              <li><b>Customer</b>: Customer ID, Customer Name, Segment</li>
+              <li><b>Geography</b>: Country, City, State, Postal Code, Region</li>
+              <li><b>Product</b>: Product ID, Category, Sub-Category, Product Name</li>
+              <li><b>Metric</b>: Sales</li>
+            </ul>
+          </div>
+
+          <div class="modal-section">
+            <div class="modal-label">Try questions like</div>
+            <ul class="modal-list">
+              <li>“Which region has the highest total sales?”</li>
+              <li>“Show total sales by category”</li>
+              <li>“What are the top 10 states by sales?”</li>
+              <li>“Show total sales by month”</li>
+            </ul>
+          </div>
+
+          <div class="modal-section" data-dev-only="true">
+            <div class="modal-label">Where is it stored?</div>
+            <div class="pill-row">
+              <span class="pill-lite"><b>enterprise.db</b></span>
+              <span class="pill-lite">SQLite</span>
+            </div>
+            <div class="modal-desc muted">Behind the scenes it’s stored in two tables:</div>
+            <div class="table-list">
+              <div class="table-item">
+                <div class="table-name">orders</div>
+                <div class="table-desc">Order dates, shipping, customer, and location</div>
+                <details class="details details-compact" data-dev-only="true">
+                  <summary>Fields (dev)</summary>
+                  <pre>order_id (PK), order_date, ship_date, ship_mode, customer_id, customer_name, segment, country, city, state, postal_code, region</pre>
+                </details>
+              </div>
+              <div class="table-item">
+                <div class="table-name">order_items</div>
+                <div class="table-desc">Products (category/sub-category) and sales amount</div>
+                <details class="details details-compact" data-dev-only="true">
+                  <summary>Fields (dev)</summary>
+                  <pre>row_id (PK), order_id (FK → orders.order_id), product_id, category, sub_category, product_name, sales</pre>
+                </details>
+              </div>
+            </div>
+          </div>
+
+          <div class="modal-section" data-dev-only="true">
+            <div class="modal-label">Joins (dev)</div>
+            <div class="modal-desc">`order_items.order_id` → `orders.order_id`</div>
+          </div>
+
+          <div class="modal-section" data-dev-only="true">
+            <div class="modal-label">Notes (dev)</div>
+            <ul class="modal-list">
+              <li>Dataset file: <code>data/train.csv</code></li>
+              <li>All queries are SELECT-only; a default LIMIT is applied if missing.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
+

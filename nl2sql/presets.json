@@ -1,0 +1,69 @@
+[
+  {
+    "id": "sales_by_region",
+    "canonical": "show total sales by region",
+    "aliases": ["total sales by region", "sales by region", "revenue by region"],
+    "sql": "SELECT o.region, SUM(oi.sales) AS total_sales FROM order_items oi JOIN orders o ON o.order_id = oi.order_id GROUP BY o.region ORDER BY total_sales DESC"
+  },
+  {
+    "id": "sales_by_category",
+    "canonical": "show total sales by category",
+    "aliases": ["total sales by category", "sales by category", "revenue by category"],
+    "sql": "SELECT oi.category, SUM(oi.sales) AS total_sales FROM order_items oi GROUP BY oi.category ORDER BY total_sales DESC"
+  },
+  {
+    "id": "sales_by_sub_category",
+    "canonical": "show total sales by sub-category",
+    "aliases": ["total sales by sub-category", "sales by sub-category", "sales by subcategory"],
+    "sql": "SELECT oi.sub_category, SUM(oi.sales) AS total_sales FROM order_items oi GROUP BY oi.sub_category ORDER BY total_sales DESC"
+  },
+  {
+    "id": "top_states_by_sales",
+    "canonical": "what are the top 10 states by sales?",
+    "aliases": ["top 10 states by sales", "top states by sales", "best states by sales"],
+    "sql": "SELECT o.state, SUM(oi.sales) AS total_sales FROM order_items oi JOIN orders o ON o.order_id = oi.order_id GROUP BY o.state ORDER BY total_sales DESC LIMIT 10"
+  },
+  {
+    "id": "top_cities_by_sales",
+    "canonical": "what are the top 10 cities by sales?",
+    "aliases": ["top 10 cities by sales", "top cities by sales", "best cities by sales"],
+    "sql": "SELECT o.city, o.state, SUM(oi.sales) AS total_sales FROM order_items oi JOIN orders o ON o.order_id = oi.order_id GROUP BY o.city, o.state ORDER BY total_sales DESC LIMIT 10"
+  },
+  {
+    "id": "orders_count",
+    "canonical": "how many unique orders are in the dataset?",
+    "aliases": ["count orders", "number of orders", "total orders", "how many orders"],
+    "sql": "SELECT COUNT(*) AS orders_count FROM orders"
+  },
+  {
+    "id": "total_sales",
+    "canonical": "what is the total sales?",
+    "aliases": ["total sales", "sum sales"],
+    "sql": "SELECT SUM(oi.sales) AS total_sales FROM order_items oi"
+  },
+  {
+    "id": "sales_by_segment",
+    "canonical": "show total sales by segment",
+    "aliases": ["total sales by segment", "sales by segment"],
+    "sql": "SELECT o.segment, SUM(oi.sales) AS total_sales FROM order_items oi JOIN orders o ON o.order_id = oi.order_id GROUP BY o.segment ORDER BY total_sales DESC"
+  },
+  {
+    "id": "sales_by_ship_mode",
+    "canonical": "show total sales by ship mode",
+    "aliases": ["total sales by ship mode", "sales by ship mode", "sales by shipping mode"],
+    "sql": "SELECT o.ship_mode, SUM(oi.sales) AS total_sales FROM order_items oi JOIN orders o ON o.order_id = oi.order_id GROUP BY o.ship_mode ORDER BY total_sales DESC"
+  },
+  {
+    "id": "sales_by_month",
+    "canonical": "show total sales by month",
+    "aliases": ["sales by month", "monthly sales", "sales trend by month"],
+    "sql": "SELECT substr(o.order_date, 1, 7) AS month, SUM(oi.sales) AS total_sales FROM order_items oi JOIN orders o ON o.order_id = oi.order_id GROUP BY substr(o.order_date, 1, 7) ORDER BY month ASC"
+  },
+  {
+    "id": "top_products_by_sales",
+    "canonical": "what are the top 10 products by sales?",
+    "aliases": ["top 10 products by sales", "top products by sales", "best products by sales"],
+    "sql": "SELECT oi.product_name, SUM(oi.sales) AS total_sales FROM order_items oi GROUP BY oi.product_name ORDER BY total_sales DESC LIMIT 10"
+  }
+]
+

@@ -1,0 +1,5 @@
+.DS_Store
+.env
+/temp
+/test_screenshots
+README-internal.md

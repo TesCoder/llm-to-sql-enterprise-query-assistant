@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LLM-to-SQL — Manual SQL Console</title>
+    <link rel="stylesheet" href="/manual/styles.css?v=20260218-4" />
+  </head>
+  <body>
+    <div class="app">
+      <header class="header">
+        <div class="brand">
+          <div class="logo">SQL</div>
+          <div>
+            <div class="title">LLM-to-SQL Enterprise Query Assistant</div>
+            <div class="subtitle">
+              Manual SQL Console (runs against <code>POST /query</code>)
+            </div>
+          </div>
+        </div>
+
+        <div class="header-actions">
+          <a class="link" href="/docs" target="_blank" rel="noreferrer">API Docs</a>
+          <a class="link" href="/health" target="_blank" rel="noreferrer">Health</a>
+        </div>
+      </header>
+
+      <main class="main">
+        <section class="panel">
+          <div class="panel-header">
+            <div class="panel-title">SQL</div>
+            <div class="panel-actions">
+              <select id="sample" class="select" aria-label="Sample queries">
+                <option value="">Sample queries…</option>
+                <option value="SELECT COUNT(*) AS orders_count FROM orders">
+                  Count orders
+                </option>
+                <option
+                  value="SELECT region, SUM(oi.sales) AS total_sales FROM order_items oi JOIN orders o ON o.order_id = oi.order_id GROUP BY region ORDER BY total_sales DESC"
+                >
+                  Total sales by region
+                </option>
+                <option
+                  value="SELECT category, SUM(sales) AS total_sales FROM order_items GROUP BY category ORDER BY total_sales DESC"
+                >
+                  Total sales by category
+                </option>
+                <option
+                  value="SELECT o.state, SUM(oi.sales) AS total_sales FROM order_items oi JOIN orders o ON o.order_id = oi.order_id GROUP BY o.state ORDER BY total_sales DESC LIMIT 10"
+                >
+                  Top 10 states by sales
+                </option>
+              </select>
+
+              <button id="run" class="button primary" type="button">Run</button>
+            </div>
+          </div>
+
+          <textarea
+            id="sql"
+            class="textarea"
+            spellcheck="false"
+            placeholder="Type a SELECT query, e.g. SELECT COUNT(*) AS orders_count FROM orders"
+          ></textarea>
+
+          <div class="hint">
+            SELECT-only. If you omit a LIMIT, the API adds <code>LIMIT 200</code>.
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <div class="panel-title">Result</div>
+            <div class="panel-actions">
+              <span id="status" class="status muted">Idle</span>
+            </div>
+          </div>
+
+          <div id="error" class="error hidden"></div>
+
+          <div class="meta">
+            <div class="meta-row">
+              <div class="meta-label">Executed SQL</div>
+              <div id="executedSql" class="meta-value muted">—</div>
+            </div>
+            <div class="meta-row">
+              <div class="meta-label">Row count</div>
+              <div id="rowCount" class="meta-value muted">—</div>
+            </div>
+          </div>
+
+          <div id="tableWrap" class="table-wrap muted">
+            Run a query to see results.
+          </div>
+        </section>
+      </main>
+
+      <footer class="footer">
+        <span class="muted"
+          >Backend: <code>service/app.py</code> · DB: <code>enterprise.db</code> · Dataset:
+          <code>data/train.csv</code></span
+        >
+      </footer>
+    </div>
+
+    <script src="/manual/app.js?v=20260218-4" defer></script>
+  </body>
+</html>
+
