@@ -10,6 +10,10 @@ Modern teams run on data — but SQL still creates a bottleneck. This product re
 ## Start here: the Ask UI (`/ui`)
 Open `http://127.0.0.1:8000/` (redirects to `/ui/`).
 
+Ask UI at initialization (empty state):
+
+![Ask UI empty state](screenshots/ui-initial-empty.png)
+
 - **User-first**: one page, one box, clear examples
 - **Transparent by default**: every response is structured and includes `sql` (when executed), `rows`, and `row_count`
 - **No SQL required**: non-technical users ask questions; the system runs the query
@@ -121,6 +125,8 @@ python -m pytest -q
 ```
 
 ## Technical architecture
+![Architecture overview](docs/architecture.svg)
+
 This repo is clean, modular, and easy to extend:
 - **Ask UI**: static app in `ui/` (served by FastAPI at `/ui/`) that calls `POST /ask`
 - **Manual SQL console**: static app in `manual/` (served at `/manual/`) that calls `POST /query`
