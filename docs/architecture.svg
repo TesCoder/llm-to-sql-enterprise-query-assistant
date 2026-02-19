@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="860" viewBox="0 0 1400 860">
+  <defs>
+    <style>
+      .title { font: 700 28px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; fill: #0b1220; }
+      .subtitle { font: 400 15px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; fill: #334155; }
+      .label { font: 700 15px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; fill: #0b1220; }
+      .text { font: 400 13px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; fill: #0b1220; }
+      .muted { fill: #475569; }
+      .box { fill: #ffffff; stroke: #0f172a; stroke-width: 2; rx: 14; }
+      .boxSoft { fill: #f8fafc; stroke: #0f172a; stroke-width: 2; rx: 14; }
+      .boxBlue { fill: #eff6ff; stroke: #1d4ed8; stroke-width: 2; rx: 14; }
+      .boxGreen { fill: #ecfdf5; stroke: #047857; stroke-width: 2; rx: 14; }
+      .boxAmber { fill: #fff7ed; stroke: #c2410c; stroke-width: 2; rx: 14; }
+      .arrow { stroke: #0f172a; stroke-width: 2.5; fill: none; marker-end: url(#arrowHead); }
+      .arrowSoft { stroke: #334155; stroke-width: 2; fill: none; marker-end: url(#arrowHeadSoft); }
+      .dash { stroke-dasharray: 6 6; }
+    </style>
+
+    <marker id="arrowHead" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M 0 0 L 12 6 L 0 12 z" fill="#0f172a" />
+    </marker>
+    <marker id="arrowHeadSoft" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M 0 0 L 12 6 L 0 12 z" fill="#334155" />
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect x="0" y="0" width="1400" height="860" fill="#ffffff" />
+
+  <!-- Header -->
+  <text x="60" y="70" class="title">LLM-to-SQL Enterprise Query Assistant - architecture</text>
+  <text x="60" y="98" class="subtitle">FastAPI + presets-first NL to SQL + SQLite (Superstore) - served UI at /ui and manual SQL console at /manual</text>
+
+  <!-- Entry points -->
+  <rect x="60" y="130" width="1280" height="90" class="boxSoft" />
+  <text x="90" y="170" class="label">Entry points</text>
+  <text x="90" y="196" class="text muted">UI: <tspan font-weight="600">/ui</tspan> (Natural-language Ask) - <tspan font-weight="600">/manual</tspan> (SQL console) - API: <tspan font-weight="600">POST /ask</tspan> - <tspan font-weight="600">POST /query</tspan> - Health: <tspan font-weight="600">/health</tspan></text>
+
+  <!-- UI surfaces -->
+  <rect x="60" y="250" width="380" height="200" class="boxBlue" />
+  <text x="90" y="285" class="label">User UI - /ui</text>
+  <text x="90" y="314" class="text">- Centered question input + Run/Clear</text>
+  <text x="90" y="337" class="text">- Preset chips; dev toggle shows status/SQL/debug</text>
+  <text x="90" y="360" class="text">- Renders table + inferred chart/KPI</text>
+  <text x="90" y="383" class="text">- Loading/Error states; read-only messaging</text>
+
+  <rect x="470" y="250" width="340" height="200" class="boxBlue" />
+  <text x="500" y="285" class="label">Manual SQL console - /manual</text>
+  <text x="500" y="314" class="text">- Textarea + sample queries</text>
+  <text x="500" y="337" class="text">- Calls POST /query directly</text>
+  <text x="500" y="360" class="text">- Shows executed SQL + row count + table</text>
+
+  <!-- FastAPI service -->
+  <rect x="850" y="230" width="490" height="260" class="box" />
+  <text x="880" y="265" class="label">FastAPI service - service/app.py</text>
+  <text x="880" y="292" class="text">- Mounts static UI (/ui) + manual console (/manual)</text>
+  <text x="880" y="315" class="text">- Endpoints: /ask (NL to SQL) - /query (raw SQL) - /health</text>
+  <text x="880" y="338" class="text">- Guardrails: SELECT-only, single statement, default LIMIT</text>
+  <text x="880" y="361" class="text">- Safety limit applied when missing (200 rows default)</text>
+  <text x="880" y="384" class="text">- Returns: question, source=verified|llm, preset_id?, sql?, rows, row_count, message, meta</text>
+
+  <!-- Presets + LLM lane -->
+  <rect x="60" y="500" width="430" height="250" class="boxGreen" />
+  <text x="90" y="535" class="label">Verified presets - nl2sql/presets.json</text>
+  <text x="90" y="562" class="text">- match_preset() finds reviewed SQL for common asks</text>
+  <text x="90" y="585" class="text">- Executes directly after guardrails + LIMIT</text>
+  <text x="90" y="608" class="text">- Response marked <tspan font-weight="700">source=verified</tspan>; message explains no LLM call</text>
+
+  <rect x="520" y="500" width="420" height="250" class="boxAmber" />
+  <text x="550" y="535" class="label">LLM fallback - nl2sql/llm.py</text>
+  <text x="550" y="562" class="text">- Builds live schema context (tables/columns) from DB</text>
+  <text x="550" y="585" class="text">- Prompted to generate SELECT-only SQL (role-aware)</text>
+  <text x="550" y="608" class="text">- On DB error: one-shot repair attempt with error hints</text>
+  <text x="550" y="631" class="text">- Guardrails + LIMIT enforced before execution</text>
+  <text x="550" y="654" class="text">- Response marked <tspan font-weight="700">source=llm</tspan></text>
+
+  <!-- Database -->
+  <rect x="970" y="520" width="370" height="190" class="boxSoft" />
+  <text x="1000" y="555" class="label">Database - SQLite file (enterprise.db)</text>
+  <text x="1000" y="582" class="text">- Tables: orders, order_items (Superstore dataset)</text>
+  <text x="1000" y="605" class="text">- Indexed on state/date/category</text>
+  <text x="1000" y="628" class="text">- Accessed via aiosqlite/SQLAlchemy text()</text>
+
+  <!-- Arrows from UIs to service -->
+  <path d="M 250 450 L 250 480 L 900 480" class="arrow" />
+  <text x="280" y="470" class="subtitle">POST /ask</text>
+
+  <path d="M 640 450 L 640 470 L 900 470" class="arrowSoft" />
+  <text x="670" y="445" class="subtitle">POST /query</text>
+
+  <!-- Arrows inside service -->
+  <path d="M 1040 490 L 360 500" class="arrowSoft dash" />
+  <text x="420" y="488" class="subtitle">preset match first</text>
+
+  <path d="M 1180 490 L 730 500" class="arrowSoft dash" />
+  <text x="820" y="488" class="subtitle">LLM fallback when no preset</text>
+
+  <!-- Execution arrows to DB -->
+  <path d="M 360 650 L 1000 650" class="arrow" />
+  <text x="520" y="640" class="subtitle">Execute SQL (SELECT-only, capped)</text>
+
+  <path d="M 730 680 L 1000 680" class="arrow" />
+
+  <!-- Response arrows back -->
+  <path d="M 1000 600 L 360 430" class="arrowSoft dash" />
+  <text x="650" y="420" class="subtitle">rows + row_count + sql + source</text>
+
+  <path d="M 1000 570 L 640 430" class="arrowSoft dash" />
+
+  <!-- Footer note -->
+  <text x="60" y="828" class="subtitle">Notes: Guardrails block non-SELECT and multi-statement SQL; default LIMIT applied if missing. Dev mode in /ui reveals status, SQL, and debug JSON for troubleshooting.</text>
+</svg>
