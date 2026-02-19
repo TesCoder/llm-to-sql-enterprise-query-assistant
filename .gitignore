@@ -1,6 +1,18 @@
 .DS_Store
 .env
+.venv/
 /temp
 /test_screenshots
 README-internal.md
 ui/brand.svg
+
+# Python bytecode / caches
+__pycache__/
+*.py[cod]
+.pytest_cache/
+*.pyc
+nl2sql/__pycache__/llm.cpython-314.pyc
+nl2sql/__pycache__/presets.cpython-314.pyc
+nl2sql/__pycache__/schema.cpython-314.pyc
+service/__pycache__/app.cpython-314.pyc
+data/__pycache__/load_data.cpython-314.pyc

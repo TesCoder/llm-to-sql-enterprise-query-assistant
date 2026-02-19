@@ -1,0 +1,14 @@
+.DS_Store
+.env
+.venv
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pytest_cache/
+*.mypy_cache/
+.coverage
+.git/
+temp/
+test_screenshots/
+enterprise.db

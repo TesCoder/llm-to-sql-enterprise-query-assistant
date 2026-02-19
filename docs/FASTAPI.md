@@ -40,6 +40,20 @@ uvicorn service.app:app --reload
 - **Host/port**: `http://127.0.0.1:8000`
 - `--reload` restarts the server when you change Python files.
 
+## Run with Docker (optional)
+
+Prereq: install Docker and make sure it’s running (e.g. Docker Desktop / Colima). If `docker` is not found, Docker isn’t installed yet.
+
+```bash
+docker compose up --build
+```
+
+Then open `http://127.0.0.1:8000/`.
+
+Notes:
+- The Docker image builds `enterprise.db` from `data/train.csv` at build time.
+- To enable LLM fallback, set `OPENAI_API_KEY` / `OPENAI_API_URL` (DeepSeek) via your shell or a local `.env` file (see `.env.example`).
+
 ## Environment variables
 
 The backend loads environment variables from `.env` (via `python-dotenv`) and/or your shell environment.

@@ -6,7 +6,6 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, Optional, Sequence
 
-
 _WHITESPACE_RE = re.compile(r"\s+")
 _PUNCT_RE = re.compile(r"[^\w\s]")
 
@@ -100,4 +99,3 @@ def load_preset_index(json_path: Path) -> Dict[str, Preset]:
 def match_preset(index: Dict[str, Preset], question: str) -> Optional[Preset]:
     key = normalize_question(question)
     return index.get(key)
-

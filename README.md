@@ -93,6 +93,33 @@ uvicorn service.app:app --reload
 
 Then open `http://127.0.0.1:8000/`.
 
+## Run with Docker
+
+Prereq: install Docker and make sure it’s running (e.g. Docker Desktop / Colima). If `docker` is not found, Docker isn’t installed yet.
+
+```bash
+docker compose up --build
+```
+
+Then open `http://127.0.0.1:8000/`.
+
+Notes:
+- The Docker image builds `enterprise.db` from `data/train.csv` at build time.
+- To enable LLM fallback in Docker, copy `.env.example` → `.env` and set `OPENAI_API_KEY` / `OPENAI_API_URL` (DeepSeek).
+
+## CI (GitHub Actions)
+This repo includes a GitHub Actions workflow at `.github/workflows/ci.yml` that runs on pushes and pull requests:
+- Python: `compileall`, `black --check`, `pytest`
+- Docker: `docker build` (ensures the Dockerfile stays valid)
+
+Run the same checks locally:
+
+```bash
+source .venv/bin/activate
+python -m black --check .
+python -m pytest -q
+```
+
 ## Technical architecture
 This repo is clean, modular, and easy to extend:
 - **Ask UI**: static app in `ui/` (served by FastAPI at `/ui/`) that calls `POST /ask`

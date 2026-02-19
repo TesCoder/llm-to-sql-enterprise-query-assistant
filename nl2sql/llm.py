@@ -73,6 +73,19 @@ def _load_dotenv_if_present() -> None:
         return
 
 
+def _strip_wrapping_quotes(value: Optional[str]) -> Optional[str]:
+    """
+    Docker/Compose env files sometimes preserve quotes. Strip a single matching pair of
+    wrapping quotes to avoid values like "'sk-...'" or '"https://.../v1"'.
+    """
+    if value is None:
+        return None
+    v = value.strip()
+    if len(v) >= 2 and v[0] == v[-1] and v[0] in {"'", '"'}:
+        return v[1:-1]
+    return v
+
+
 def _client() -> AsyncOpenAI:
     # DeepSeek exposes an OpenAI-SDK compatible API. We use the same `AsyncOpenAI` client
     # for both providers by swapping keys + base URLs.
@@ -107,6 +120,9 @@ def _client() -> AsyncOpenAI:
     else:
         api_key = os.getenv("OPENAI_API_KEY")
         base_url = os.getenv("OPENAI_BASE_URL") or os.getenv("OPENAI_API_URL")
+
+    api_key = _strip_wrapping_quotes(api_key)
+    base_url = _strip_wrapping_quotes(base_url)
 
     if api_key:
         kwargs["api_key"] = api_key
@@ -180,7 +196,9 @@ def _user_prompt(question: str, schema: str, role: str) -> str:
     )
 
 
-def _repair_prompt(question: str, schema: str, role: str, previous_sql: str, error: str) -> str:
+def _repair_prompt(
+    question: str, schema: str, role: str, previous_sql: str, error: str
+) -> str:
     # When the first attempt fails at execution-time, we feed the DB error back to the model
     # along with the prior SQL. This often fixes small issues (typos, wrong table aliasing).
     return "\n".join(
@@ -238,7 +256,10 @@ async def generate_sql(
             model=_model(),
             temperature=0,
             max_tokens=int(
-                os.getenv("LLM_MAX_TOKENS") or os.getenv("DEEPSEEK_MAX_TOKENS") or os.getenv("OPENAI_MAX_TOKENS") or "300"
+                os.getenv("LLM_MAX_TOKENS")
+                or os.getenv("DEEPSEEK_MAX_TOKENS")
+                or os.getenv("OPENAI_MAX_TOKENS")
+                or "300"
             ),
             messages=[
                 {"role": "system", "content": system},
@@ -252,7 +273,9 @@ async def generate_sql(
     except RateLimitError as exc:
         raise RuntimeError("LLM rate limit exceeded. Try again shortly.") from exc
     except (APITimeoutError, APIConnectionError) as exc:
-        raise RuntimeError("LLM request failed (timeout/connection). Try again.") from exc
+        raise RuntimeError(
+            "LLM request failed (timeout/connection). Try again."
+        ) from exc
     except APIStatusError as exc:
         raise RuntimeError(f"LLM request failed (HTTP {exc.status_code}).") from exc
     except OpenAIError as exc:
@@ -286,7 +309,9 @@ async def chat_text(prompt: str) -> str:
     except RateLimitError as exc:
         raise RuntimeError("LLM rate limit exceeded. Try again shortly.") from exc
     except (APITimeoutError, APIConnectionError) as exc:
-        raise RuntimeError("LLM request failed (timeout/connection). Try again.") from exc
+        raise RuntimeError(
+            "LLM request failed (timeout/connection). Try again."
+        ) from exc
     except APIStatusError as exc:
         raise RuntimeError(f"LLM request failed (HTTP {exc.status_code}).") from exc
     except OpenAIError as exc:
@@ -300,7 +325,7 @@ def _cli_usage() -> str:
         [
             "Usage:",
             "  python nl2sql/llm.py --ping",
-            "  python nl2sql/llm.py \"Say hello\"",
+            '  python nl2sql/llm.py "Say hello"',
             "",
             "Notes:",
             "- Loads repo-root .env automatically (if python-dotenv is installed).",

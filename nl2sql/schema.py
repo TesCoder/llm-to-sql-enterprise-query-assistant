@@ -43,18 +43,14 @@ async def _distinct_values(
     These "value hints" are used to ground the LLM so it chooses correct columns/filters
     (e.g. Phones is a sub-category, not a category).
     """
-    rows = await database.fetch_all(
-        text(
-            f"""
+    rows = await database.fetch_all(text(f"""
             SELECT DISTINCT {column} AS v
             FROM {table}
             WHERE {column} IS NOT NULL
               AND TRIM({column}) != ''
             ORDER BY {column}
             LIMIT {limit}
-            """
-        )
-    )
+            """))
     out: List[str] = []
     for r in rows:
         v = r["v"]
@@ -93,7 +89,9 @@ async def _build_value_hints(database: Database, tables: List[str]) -> List[str]
     hints: List[str] = []
     for table, column in targets:
         try:
-            values = await _distinct_values(database, table=table, column=column, limit=31)
+            values = await _distinct_values(
+                database, table=table, column=column, limit=31
+            )
         except Exception:
             continue
 
@@ -111,18 +109,16 @@ async def _build_value_hints(database: Database, tables: List[str]) -> List[str]
     return hints
 
 
-async def _introspect_sqlite(database: Database) -> Tuple[List[str], Dict[str, List[str]], List[str]]:
-    table_rows = await database.fetch_all(
-        text(
-            """
+async def _introspect_sqlite(
+    database: Database,
+) -> Tuple[List[str], Dict[str, List[str]], List[str]]:
+    table_rows = await database.fetch_all(text("""
             SELECT name
             FROM sqlite_master
             WHERE type='table'
               AND name NOT LIKE 'sqlite_%%'
             ORDER BY name
-            """
-        )
-    )
+            """))
     # NOTE: the literal percent is escaped as `%%` because the `databases` SQLite backend uses
     # percent-formatting internally when compiling SQLAlchemy text queries.
     tables = [str(r["name"]) for r in table_rows]
@@ -179,8 +175,12 @@ def _format_schema(
     # Project-specific hints (helps the model with date grouping).
     if "orders" in tables:
         lines.append("Notes:")
-        lines.append("- orders.order_date and orders.ship_date are ISO date strings (YYYY-MM-DD).")
-        lines.append("- For month buckets, you can use substr(order_date, 1, 7) AS month.")
+        lines.append(
+            "- orders.order_date and orders.ship_date are ISO date strings (YYYY-MM-DD)."
+        )
+        lines.append(
+            "- For month buckets, you can use substr(order_date, 1, 7) AS month."
+        )
         if "order_items" in tables:
             lines.append(
                 "- orders has one row per order_id; order_items has line items. When counting orders after joining, use COUNT(DISTINCT orders.order_id)."
@@ -215,10 +215,11 @@ async def build_schema_context(database: Database) -> str:
     try:
         tables, columns_by_table, relationships = await _introspect_sqlite(database)
         value_hints = await _build_value_hints(database, tables)
-        schema = _format_schema(tables, columns_by_table, relationships, value_hints=value_hints)
+        schema = _format_schema(
+            tables, columns_by_table, relationships, value_hints=value_hints
+        )
     except Exception:
         schema = _fallback_schema()
 
     _SCHEMA_CACHE[url] = schema
     return schema
-

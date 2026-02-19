@@ -16,7 +16,6 @@ from nl2sql.llm import generate_sql
 from nl2sql.presets import Preset, load_preset_index, match_preset
 from nl2sql.schema import build_schema_context
 
-
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(dotenv_path=BASE_DIR / ".env")
 
@@ -31,7 +30,9 @@ if UI_DIR.exists():
 
 MANUAL_DIR = BASE_DIR / "manual"
 if MANUAL_DIR.exists():
-    app.mount("/manual", StaticFiles(directory=str(MANUAL_DIR), html=True), name="manual")
+    app.mount(
+        "/manual", StaticFiles(directory=str(MANUAL_DIR), html=True), name="manual"
+    )
 
 PRESETS_JSON_PATH = BASE_DIR / "nl2sql" / "presets.json"
 PRESET_INDEX = load_preset_index(PRESETS_JSON_PATH)
@@ -55,7 +56,9 @@ class AskRequest(BaseModel):
 class AskResponse(BaseModel):
     question: str
     role: str
-    source: str = Field(..., description="Where the answer came from (verified|llm|cache)")
+    source: str = Field(
+        ..., description="Where the answer came from (verified|llm|cache)"
+    )
     preset_id: Optional[str] = Field(
         default=None, description="Verified question id when source=verified"
     )
@@ -91,15 +94,21 @@ def ensure_select_only(sql: str) -> str:
     # We accept CTEs (`WITH ... SELECT ...`) because many generated queries use them, but
     # we still enforce read-only semantics via keyword bans + single-statement checks.
     if not (lowered.startswith("select") or lowered.startswith("with")):
-        raise HTTPException(status_code=400, detail="Only SELECT statements are allowed.")
+        raise HTTPException(
+            status_code=400, detail="Only SELECT statements are allowed."
+        )
 
     # Block multi-statement execution (e.g. "SELECT ...; DROP TABLE ...") even if the first
     # statement looks safe.
     if ";" in normalized:
-        raise HTTPException(status_code=400, detail="Multiple statements are not allowed.")
+        raise HTTPException(
+            status_code=400, detail="Multiple statements are not allowed."
+        )
 
     if any(re.search(rf"\\b{kw}\\b", lowered) for kw in forbidden):
-        raise HTTPException(status_code=400, detail="Only SELECT statements are allowed.")
+        raise HTTPException(
+            status_code=400, detail="Only SELECT statements are allowed."
+        )
 
     return normalized
 

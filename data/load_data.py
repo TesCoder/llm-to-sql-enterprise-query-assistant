@@ -8,7 +8,6 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Tuple
 
-
 BASE_DIR = Path(__file__).resolve().parent.parent
 DB_PATH = BASE_DIR / "enterprise.db"
 CSV_PATH = Path(__file__).resolve().parent / "train.csv"
@@ -26,8 +25,7 @@ def parse_date(value: str) -> str:
 
 def create_schema(conn: sqlite3.Connection) -> None:
     """Create normalized tables for orders and order line items."""
-    conn.executescript(
-        """
+    conn.executescript("""
         PRAGMA foreign_keys = ON;
 
         DROP TABLE IF EXISTS order_items;
@@ -62,8 +60,7 @@ def create_schema(conn: sqlite3.Connection) -> None:
         CREATE INDEX idx_orders_order_date ON orders(order_date);
         CREATE INDEX idx_items_category ON order_items(category);
         CREATE INDEX idx_items_sub_category ON order_items(sub_category);
-        """
-    )
+        """)
     conn.commit()
 
 
@@ -131,7 +128,9 @@ def main() -> None:
     with sqlite3.connect(DB_PATH) as conn:
         create_schema(conn)
         order_count, item_count = load_dataset(conn)
-        print(f"Loaded {order_count} orders and {item_count} order items into {DB_PATH}")
+        print(
+            f"Loaded {order_count} orders and {item_count} order items into {DB_PATH}"
+        )
 
 
 if __name__ == "__main__":
